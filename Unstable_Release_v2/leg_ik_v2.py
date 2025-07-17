@@ -84,4 +84,4 @@ if __name__ == "__main__" and False:
             z = float(z_str)
             print(leg_ik(x, y, z, "FL"))
         except ValueError:
-            print("Please enter three numbers in the format 'x y
+            print(f"Please enter three numbers in the format 'x y z' ")
