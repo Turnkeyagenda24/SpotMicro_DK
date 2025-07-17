@@ -40,4 +40,4 @@ def safe_set_servo(channel, angle):
     try:
         set_servo(channel, angle)
     except OSError as e:
-        print(f"[Servo Error] Failed to write to channel {channel} at angle
+        print(f"[Servo Error] Failed to write to channel {channel} at angle {angle:.1f}: {e}")
