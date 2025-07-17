@@ -101,6 +101,10 @@ def main():
             pygame.event.pump()
             pressed = joystick.get_button(MODE_TOGGLE_BUTTON)
 
+            # Set your desired offsets here
+            cog_x_offset = 0
+            cog_y_offset = 2  # Try positive or negative values to see the effect
+
             # Mode toggle logic
             if pressed and mode_toggle_ready:
                 if mode == MODE_TRANSLATE:
@@ -129,8 +133,8 @@ def main():
                 pos_x, pos_y, pos_z, pitch, roll, yaw = handle_walk(ry, gait_controller)
                 controller_led.lightbar.set_color(255, 0, 0)
                 # IMU/CoG compensation could be added here if needed
-                cog_x_offset = 0
-                cog_y_offset = 0
+                # cog_x_offset = 0
+                # cog_y_offset = 0
 
             # Smoothing
             smoothed_pos_x += (pos_x - smoothed_pos_x) * SMOOTHING_SPEED
@@ -143,10 +147,6 @@ def main():
                     pos_x, pos_y, BASE_HEIGHT, HIP_X_OFFSETS, interpolator.current_positions
                 )
                 target_leg_positions = interpolator.update(raw_targets)
-                for leg_id in target_leg_positions:
-                    x, y, z = target_leg_positions[leg_id]
-                    x += cog_x_offset
-                    target_leg_positions[leg_id] = (x, y, z)
             else:
                 target_leg_positions = {}
                 for leg_id in ['FL', 'FR', 'BL', 'BR']:
@@ -154,12 +154,20 @@ def main():
                     rel_x = smoothed_pos_x - hip_offset
                     target_leg_positions[leg_id] = (rel_x, smoothed_pos_y, smoothed_pos_z)
 
+            # Apply global offsets to all leg positions
+            for leg_id in target_leg_positions:
+                x, y, z = target_leg_positions[leg_id]
+                x += cog_x_offset
+                y += cog_y_offset
+                target_leg_positions[leg_id] = (x, y, z)
+
             # Send servo commands
             for leg_id, (x, y, z) in target_leg_positions.items():
                 if mode == MODE_WALK:
                     angles = leg_ik(x, y, z, leg_id, pitch, roll)
                 else:
-                    angles = leg_ik(smoothed_pos_x, smoothed_pos_y, smoothed_pos_z, leg_id, pitch, roll)
+                    offset_smoothed_pos_y = smoothed_pos_y + cog_y_offset
+                    angles = leg_ik(smoothed_pos_x, offset_smoothed_pos_y, smoothed_pos_z, leg_id, pitch, roll)
                 safe_set_servo(CHANNEL_MAP[leg_id]["hip"], angles["hip"])
                 safe_set_servo(CHANNEL_MAP[leg_id]["thigh"], angles["thigh"])
                 safe_set_servo(CHANNEL_MAP[leg_id]["shin"], angles["shin"])
