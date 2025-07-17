@@ -69,19 +69,22 @@ class GaitController:
         total_cycle_time = self.STEP_DURATION * self.NUM_PHASES
         current_phase = (elapsed % total_cycle_time) / total_cycle_time  # 0–1 over full gait
 
-        # Compute body shift for stability
-        body_shift = 2
-        left_phase = (current_phase - self.LEG_PHASE_OFFSETS['FL'] / self.NUM_PHASES) % 1.0
-        right_phase = (current_phase - self.LEG_PHASE_OFFSETS['FR'] / self.NUM_PHASES) % 1.0
-        left_legs_swinging = left_phase < 1.0 / self.NUM_PHASES
-        right_legs_swinging = right_phase < 1.0 / self.NUM_PHASES
+        # Determine which leg is swinging
+        swing_leg = None
+        min_phase = 1.0
+        for leg_id in self.LEG_ORDER:
+            phase_offset = self.LEG_PHASE_OFFSETS[leg_id] / self.NUM_PHASES
+            leg_phase = (current_phase - phase_offset) % 1.0
+            if leg_phase < min_phase:
+                min_phase = leg_phase
+                swing_leg = leg_id
 
-        if left_legs_swinging and not right_legs_swinging:
-            body_shift_x = body_shift
-        elif right_legs_swinging and not left_legs_swinging:
-            body_shift_x = -body_shift
+        # Set body shift direction: right if left leg swings, left if right leg swings
+        body_shift = 2
+        if "L" in swing_leg:
+            cog_shift = -body_shift  # Shift right when left leg swings
         else:
-            body_shift_x = 0
+            cog_shift = body_shift   # Shift left when right leg swings
 
         target_positions = {}
         for leg_id in self.LEG_ORDER:
@@ -89,7 +92,7 @@ class GaitController:
             leg_phase = (current_phase - phase_offset) % 1.0
             is_swinging = leg_phase < 1.0 / self.NUM_PHASES
 
-            base_x = pos_x + body_shift_x
+            base_x = pos_x + cog_shift
             base_y = pos_y
             base_z = pos_z
 
