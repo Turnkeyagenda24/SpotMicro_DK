@@ -52,7 +52,7 @@ STEP_LENGTH_MIN, STEP_LENGTH_MAX = -5, 5
 # Starting position (cm)
 pos_x, pos_y, pos_z = 0, 0, -15
 
-# Servo channel mapping (adjust to your setup!)
+# Servo channel mapping
 channel_map = {
     "FL": {"hip": 8, "thigh": 9, "shin": 10},
     "FR": {"hip": 12, "thigh": 13, "shin": 14},
@@ -69,7 +69,7 @@ hip_x_offsets = {
 }
 
 
-# Movement scaling factor (tweak for sensitivity)
+# Movement scaling factor
 delta_scale = 0.1
 
 try:
@@ -210,7 +210,7 @@ try:
             safe_set_servo(channel_map[leg_id]["thigh"], angles["thigh"])
             safe_set_servo(channel_map[leg_id]["shin"], angles["shin"])
 
-        time.sleep(0.02)  # roughly 30Hz update rate
+        time.sleep(0.02)
 
 except KeyboardInterrupt:
     controller_led.lightbar.set_color(0, 0, 0)
