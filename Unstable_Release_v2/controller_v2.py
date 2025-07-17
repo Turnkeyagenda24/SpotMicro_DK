@@ -2,7 +2,6 @@ import pygame
 import time
 from leg_ik import leg_ik
 from send_servo import set_servo, safe_set_servo
-from rotation import apply_rotation
 from dualsense_controller import DualSenseController
 from interpolation import Interpolator
 import gait
